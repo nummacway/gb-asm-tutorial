@@ -10,7 +10,7 @@ EntryPoint:
 	; Do not turn the LCD off outside of VBlank
 WaitVBlank:
 	ld a, [rLY]
-	cp 144
+	cp LY_VBLANK ; are we in line 144 (first line of VBlank)?
 	jp c, WaitVBlank
 
 	; Turn the LCD off
@@ -28,7 +28,7 @@ WaitVBlank:
 ; ANCHOR: copy_map
 	; Copy the tilemap
 	ld de, Tilemap
-	ld hl, $9800
+	ld hl, TILEMAP0 ; first tilemap, starting at $9800
 	ld bc, TilemapEnd - Tilemap
 	call MemCopy
 ; ANCHOR_END: copy_map
@@ -36,13 +36,13 @@ WaitVBlank:
 ; ANCHOR: copy_paddle
 	; Copy the paddle tile
 	ld de, Paddle
-	ld hl, $8000
+	ld hl, STARTOF(VRAM) ; our target tile is located at the start of VRAM
 	ld bc, PaddleEnd - Paddle
 	call MemCopy
 ; ANCHOR_END: copy_paddle
 
 	xor a, a
-	ld b, 160
+	ld b, OAM_SIZE
 	ld hl, STARTOF(OAM)
 ClearOam:
 	ld [hli], a
@@ -50,22 +50,22 @@ ClearOam:
 	jp nz, ClearOam
 
 	ld hl, STARTOF(OAM)
-	ld a, 128 + 16
+	ld a, 128 + OAM_Y_OFS ; Y position: 128 plus the Y offset of 16
 	ld [hli], a
-	ld a, 16 + 8
+	ld a, 16 + OAM_X_OFS ; X position: 16 plus the X offset of 8
 	ld [hli], a
-	ld a, 0
+	ld a, 0 ; our paddle uses the first tile (tile 0) in VRAM
 	ld [hli], a
-	ld [hl], a
+	ld [hli], a ; we're not using any attributes/flags, so we can write the 0 that's already in A
 
 	; Turn the LCD on
 	ld a, LCDC_ON | LCDC_BG_ON | LCDC_OBJ_ON
 	ld [rLCDC], a
 
 	; During the first (blank) frame, initialize display registers
-	ld a, %11100100
+	ld a, %11_10_01_00 ; maps each tile color ID to a different on-screen color
 	ld [rBGP], a
-	ld a, %11100100
+	ld a, %11_10_01_00 ; same, but the last (lowest) two bits are ignored because color ID 0 is transparent for objects
 	ld [rOBP0], a
 
 	; ANCHOR: initialize-vars
@@ -79,11 +79,11 @@ ClearOam:
 ; ANCHOR: main
 Main:
 	ld a, [rLY]
-	cp 144
+	cp LY_VBLANK
 	jp nc, Main
 WaitVBlank2:
 	ld a, [rLY]
-	cp 144
+	cp LY_VBLANK
 	jp c, WaitVBlank2
 
 	; Check the current keys every frame and move left or right.
@@ -96,12 +96,12 @@ CheckLeft:
 	jp z, CheckRight
 Left:
 	; Move the paddle one pixel to the left.
-	ld a, [STARTOF(OAM) + 1]
+	ld a, [STARTOF(OAM) + OAMA_X]
 	dec a
 	; If we've already hit the edge of the playfield, don't move.
 	cp a, 15
 	jp z, Main
-	ld [STARTOF(OAM) + 1], a
+	ld [STARTOF(OAM) + OAMA_X], a
 	jp Main
 
 ; Then check the right button.
@@ -111,12 +111,12 @@ CheckRight:
 	jp z, Main
 Right:
 	; Move the paddle one pixel to the right.
-	ld a, [STARTOF(OAM) + 1]
+	ld a, [STARTOF(OAM) + OAMA_X]
 	inc a
 	; If we've already hit the edge of the playfield, don't move.
 	cp a, 105
 	jp z, Main
-	ld [STARTOF(OAM) + 1], a
+	ld [STARTOF(OAM) + OAMA_X], a
 	jp Main
 ; ANCHOR_END: main
 
