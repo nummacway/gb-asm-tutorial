@@ -118,9 +118,9 @@ WaitVBlank2:
 	ld [wFrameCounter], a
 
 	; Move the paddle one pixel to the right.
-	ld a, [STARTOF(OAM) + 1]
+	ld a, [STARTOF(OAM) + OAMA_X]
 	inc a
-	ld [STARTOF(OAM) + 1], a
+	ld [STARTOF(OAM) + OAMA_X], a
 	jp Main
 ; ANCHOR_END: main-loop
 
