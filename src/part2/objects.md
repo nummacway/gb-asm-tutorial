@@ -39,6 +39,20 @@ The NES, for example, lacks such offsets, so you will notice that objects always
 
 :::
 
+:::tip
+
+`hardware.inc` has named constants for all these numbers – and many more! It is [recommended to avoid those "magic number" literals in code](https://en.wikipedia.org/wiki/Magic_number_(programming)#Numeric_literal) and use named constants.
+
+| Named constant | Value | Description |
+| -------------- | ----: | ----------- |
+| `OBJ_SIZE`     |     4 | Size of one object in bytes |
+| `OBJ_COUNT`    |    40 | Number of objects |
+| `OAM_SIZE`     |   160 | Size of OAM (size of all objects) |
+| `OAM_Y_OFS`    |    16 | Offset of OAM Y coordinates |
+| `OAM_X_OFS`    |     8 | Offset of OAM X coordinates |
+
+:::
+
 Let's discover objects by experimenting with them!
 
 First off, when the Game Boy is powered on, OAM is filled with a bunch of semi-random values, which may cover the screen with some random garbage.
