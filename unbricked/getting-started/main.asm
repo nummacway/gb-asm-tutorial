@@ -17,7 +17,7 @@ EntryPoint:
 	; Do not turn the LCD off outside of VBlank
 WaitVBlank:
 	ld a, [rLY]
-	cp 144
+	cp LY_VBLANK ; are we in line 144 (first line of VBlank)?
 	jp c, WaitVBlank
 
 	; Turn the LCD off
@@ -43,7 +43,7 @@ CopyTiles:
 ; ANCHOR: copy_map
 	; Copy the tilemap
 	ld de, Tilemap
-	ld hl, $9800
+	ld hl, TILEMAP0 ; first tilemap, starting at $9800
 	ld bc, TilemapEnd - Tilemap
 CopyTilemap:
 	ld a, [de]
@@ -61,7 +61,7 @@ CopyTilemap:
 	ld [rLCDC], a
 
 	; During the first (blank) frame, initialize display registers
-	ld a, %11100100
+	ld a, %11_10_01_00 ; maps each tile color ID to a different on-screen color
 	ld [rBGP], a
 
 Done:
